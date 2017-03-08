@@ -11,16 +11,21 @@ const {
   Todo
 } = require('./../models/todo');
 
-const id = new ObjectID().toHexString();
-const invalidId = id + 'abc';
-const newId = new ObjectID().toHexString();
 
 const todos = [{
+  _id: new ObjectID(),
   text: 'First test todo'
 }, {
-  _id: id,
-  text: 'Second test todo'
+  _id: new ObjectID(),
+  text: 'Second test todo',
+  completed: true,
+  completedAt: 333
 }];
+
+const id = todos[0]._id.toHexString();
+const id2 = todos[1]._id.toHexString();
+const invalidId = 'abc';
+const unknownId = new ObjectID().toHexString();
 
 beforeEach((done) => {
   Todo.remove({}).then(() => {
@@ -104,9 +109,9 @@ describe('GET /todos/:id', () => {
       .end(done);
   });
 
-  it(`should send a 404 if an unknown ID (${newId}) is sent`, (done) => {
+  it(`should send a 404 if an unknown ID (${unknownId}) is sent`, (done) => {
     request(app)
-      .get(`/todos/${newId}`)
+      .get(`/todos/${unknownId}`)
       .expect(404)
       .end(done);
   });
@@ -141,9 +146,62 @@ describe('DELETE /todos/:id', () => {
       .end(done);
   });
 
-  it(`should send a 404 if an unknown ID (${newId}) is sent`, (done) => {
+  it(`should send a 404 if an unknown ID (${unknownId}) is sent`, (done) => {
     request(app)
-      .delete(`/todos/${newId}`)
+      .delete(`/todos/${unknownId}`)
+      .expect(404)
+      .end(done);
+  });
+});
+
+describe('PATCH /todos/:id', () => {
+
+  it(`should update an individual todo as complete (${id})`, (done) => {
+    request(app)
+      .patch(`/todos/${id}`)
+      .send({
+        completed: true
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo._id).toEqual(id);
+        expect(res.body.todo.completed).toBe(true);
+        expect(res.body.todo.completedAt).toBeA('number');
+      })
+      .end(done);
+  });
+
+  it(`should update an individual todo as not complete (${id2})`, (done) => {
+    request(app)
+      .patch(`/todos/${id2}`)
+      .send({
+        completed: false
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo._id).toEqual(id2);
+        expect(res.body.todo.completed).toBe(false);
+        expect(res.body.todo.completedAt).toNotExist();
+      })
+      .end(done);
+  });
+
+  it(`should send a 404 if an invalid ID (${invalidId}) is sent`, (done) => {
+    request(app)
+      .patch(`/todos/${invalidId}`)
+      .send({
+        completed: false
+      })
+      .expect(404)
+      .end(done);
+  });
+
+  it(`should send a 404 if an unknown ID (${unknownId}) is sent`, (done) => {
+    request(app)
+      .patch(`/todos/${unknownId}`)
+      .send({
+        completed: false
+      })
       .expect(404)
       .end(done);
   });
