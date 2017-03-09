@@ -114,9 +114,9 @@ describe('GET /users/me', () => {
 });
 
 describe('POST /users/login', () => {
-  it('should login a valid user', (done) => {
-    const email = users[0].email;
-    const password = users[0].password;
+  it('should login a valid user, return auth token and store it', (done) => {
+    const email = users[1].email;
+    const password = users[1].password;
 
     request(app).post('/users/login')
       .send({
@@ -129,7 +129,21 @@ describe('POST /users/login', () => {
         expect(res.body.email).toBe(email);
         expect(res.headers['x-auth']).toExist();
       })
-      .end(done);
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findOne({
+          email
+        }).then((user) => {
+          expect(user.tokens[0]).toInclude({
+            access: 'auth',
+            token: res.headers['x-auth']
+          });
+          done();
+        }).catch((e) => done(e));
+      });
   });
 
   it('should not login a user that does not exist', (done) => {
@@ -144,8 +158,20 @@ describe('POST /users/login', () => {
       .expect(400)
       .expect((res) => {
         expect(res.body).toEqual({});
+        expect(res.headers['x-auth']).toNotExist();
       })
-      .end(done);
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findOne({
+          email
+        }).then((user) => {
+          expect(user).toNotExist();
+          done();
+        }).catch((e) => done(e));
+      });
   });
 
   it('should not login a user with an invalid passowrd', (done) => {
@@ -160,6 +186,51 @@ describe('POST /users/login', () => {
       .expect(400)
       .expect((res) => {
         expect(res.body).toEqual({});
+        expect(res.headers['x-auth']).toNotExist();
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findOne({
+          email
+        }).then((user) => {
+          expect(user.tokens.length).toEqual(1);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+});
+
+describe('DELETE /users/me/token', () => {
+  it('should remove a users token', (done) => {
+    request(app).delete('/users/me/token')
+      .set('x-auth',users[0].tokens[0].token)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual({});
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findById(users[0]._id).then((user) => {
+          expect(user.tokens.length).toBe(0);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+});
+
+describe('DELETE /users/me/logout', () => {
+  it('should redirect to /users/me/token', (done) => {
+    request(app).delete('/users/me/logout')
+      .set('x-auth',users[0].tokens[0].token)
+      .expect(302)
+      .expect((res) => {
+        expect(res.headers.location).toBe('/users/me/token');
       })
       .end(done);
   });
