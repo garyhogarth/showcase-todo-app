@@ -27,6 +27,18 @@ or configure the following environment variables on your system
 - TEST_PORT - So you can run a test server at the same time
 - TEST_MONGODB_URI - A database that can be populated with mock data for testing
 
+### Running server
+
+```
+npm start
+```
+
+### Running tests
+
+```
+npm test
+```
+
 ## Clients
 
 ### ReactJS
