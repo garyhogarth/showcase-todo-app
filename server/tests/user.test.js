@@ -137,7 +137,7 @@ describe('POST /users/login', () => {
         User.findOne({
           email
         }).then((user) => {
-          expect(user.tokens[0]).toInclude({
+          expect(user.tokens[1]).toInclude({
             access: 'auth',
             token: res.headers['x-auth']
           });
@@ -230,7 +230,7 @@ describe('DELETE /users/me/logout', () => {
       .set('x-auth',users[0].tokens[0].token)
       .expect(302)
       .expect((res) => {
-        expect(res.headers.location).toBe('/users/me/token');
+        expect(res.headers.location).toBe('/me/token');
       })
       .end(done);
   });
