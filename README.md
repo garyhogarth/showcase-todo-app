@@ -2,10 +2,10 @@
 Intended to demonstrate coding ability and understanding across multiple JavaScript frameworks.
 
 ## Servers
-### [Express](server/)
+### [Express](server-express/)
 Built with [NodeJS](https://nodejs.org/en/) using the [ExpressJS](https://expressjs.com/) framework.
 
-[View Docs](server/README.MD)
+[View Docs](server-express/README.MD)
 
 
 ## Clients
