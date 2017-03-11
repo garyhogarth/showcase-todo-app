@@ -5,7 +5,7 @@ Intended to demonstrate coding ability and understanding across multiple JavaScr
 ### [Express](server-express/)
 Built with [NodeJS](https://nodejs.org/en/) using the [ExpressJS](https://expressjs.com/) framework.
 
-[View Docs](server-express/README.MD)
+[View Docs](server-express/README.md)
 
 
 ## Clients
